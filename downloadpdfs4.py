@@ -28,6 +28,7 @@ driver.implicitly_wait(15)
 
 action = ActionChains(driver)
 options = webdriver.ChromeOptions()
+options.add_argument("--incognito")
 
 driver.maximize_window()
 
@@ -56,13 +57,16 @@ def download(foaling_year):
             pdfs = driver.find_elements_by_css_selector(".chart > a")
             for pdf in pdfs:
                 pdf.click()
-                view_full_pdf = driver.find_element(By.CSS_SELECTOR, '#interior-content > div.content > div:nth-child(4) > div > span:nth-child(6) > a:nth-child(2)')
+                print("on new page")
+                time.sleep(5)
+                #view_full_pdf = driver.find_element(By.CSS_SELECTOR, '#interior-content > div.content > div:nth-child(4) > div > span:nth-child(6) > a:nth-child(2)')
+                view_full_pdf = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.LINK_TEXT, "View Full PDF")))
                 lnk = view_full_pdf.get_attribute('href')
                 print(lnk)
                 img_name = os.path.basename(lnk)
-                if "chart" in str(lnk):
-                    urllib.request.urlretrieve(str(lnk), img_name)
-                    driver.close()
+                urllib.request.urlretrieve(str(lnk), img_name)
+                driver.close()
         except TimeoutException:
             pass;
     return None

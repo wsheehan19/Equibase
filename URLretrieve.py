@@ -68,4 +68,5 @@ for url in urls:
         pass
 
 
-    
+# https://stackoverflow.com/questions/43470535/python-download-pdf-embedded-in-a-page
+# someone is coincidentally trying to do the exact same thing, but with only one pdf

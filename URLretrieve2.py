@@ -18,6 +18,8 @@ import requests
 import random
 from selenium import webdriver
 from bs4 import BeautifulSoup as bs
+import numpy as np
+import time
 
 
 PATH = "/Users/williamsheehan/Downloads/chromedriver 3"
@@ -57,33 +59,48 @@ def download(url):
     r=requests.get(url, headers=headers, stream = True)
     text = r.text
     if 'Helvetica' in text:
-        filename = url.split("/")[4].split(".cfm")[0]
-    
-        file = open(filename, 'wb')
+#        filename = url.split("/")[4].split(".cfm")[0]
+        filename = url.split('?')[1].split('=D&STYLE')[0]
+        file = open(filename, 'wb+')
         file.write(r.content)
         file.close()
+    if "ROBOTS" in text:
+        print('text')
+        return text
     else:
-        print('shme')
+        print('invalid')
+    return None
 
-with open('random300.json', 'r') as f:
-     urls = json.load(f)
+# with open('random300.json', 'r') as f:
+#      urls = json.load(f)
+error_arr = []
 
-# for url in urls:
-#     if check(url):
-#         download(url)
-#         print('file downloading')
-#     else:
-#         pass
-#         print('blank page')
-
+# for url in urls[:25]:
+#     a = download(url)
+#     if a is not None:
+#         error_arr += [a]
+        
+    
+#print(np.random.choice(np.array(error_arr), 5))
 #print(urls)
 
-# soup = bs(r.text, 'html.parser')
-# print(soup)
 
-good_url = "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=12&BorP=P&TID=GP&CTRY=USA&DT=01/23/2021&DAY=D&STYLE=EQB/"
-bad_url = "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BTP&CTRY=USA&DT=10/06/2005&DAY=D&STYLE=EQB"
+good_urls = ["https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=12&BorP=P&TID=GP&CTRY=USA&DT=01/23/2021&DAY=D&STYLE=EQB/", "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=9&BorP=P&TID=BEL&CTRY=USA&DT=05/30/2005&DAY=D&STYLE=EQB",
+             "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=5&BorP=P&TID=DED&CTRY=USA&DT=01/19/2021&DAY=D&STYLE=EQB", "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=6&BorP=P&TID=AQU&CTRY=USA&DT=02/21/2021&DAY=D&STYLE=EQB",
+             "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=9&BorP=P&TID=BEL&CTRY=USA&DT=10/10/2020&DAY=D&STYLE=EQB"]
+bad_urls = ["https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BTP&CTRY=USA&DT=10/06/2005&DAY=D&STYLE=EQB", "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BTP&CTRY=USA&DT=10/06/2022&DAY=D&STYLE=EQB",
+            "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=GP&CTRY=USA&DT=10/06/2025&DAY=D&STYLE=EQB", "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BTP&CTRY=USA&DT=10/26/2021&DAY=D&STYLE=EQB",
+            "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BEL&CTRY=USA&DT=10/06/2023&DAY=D&STYLE=EQB"]
 
+good = "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=12&BorP=P&TID=GP&CTRY=USA&DT=01/23/2021&DAY=D&STYLE=EQB/"
+bad = "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE=1&BorP=P&TID=BEL&CTRY=USA&DT=10/06/2023&DAY=D&STYLE=EQB"
 
-download(good_url)
+for url in good_urls:
+    a = download(url)
+    time.sleep(90)
+    if a is not None:
+        error_arr += [a]
 
+#if os.path.exists(output_path):
+#        shutil.rmtree(output_path)
+#    os.mkdir(output_path)

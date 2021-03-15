@@ -14,8 +14,57 @@ from google.cloud import storage
 import re
 from google.cloud import vision
 from json import JSONDecodeError
+import datetime
+from datetime import timedelta
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/Users/williamsheehan/Downloads/Equibase-4f0a3e50cac6.json"
+
+
+
+def daterange(start_date, end_date):
+    """
+    creates range between start date and end date
+
+    Parameters
+    ----------
+    start_date : start date
+    end_date : end date
+
+    Yields
+    ------
+    range
+
+    """
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)  
+
+
+def generate(tracks_dict, query_string, start_date, end_date):
+    """
+    generates all possible chart PDF URLs
+
+    Parameters
+    ----------
+    tracks_dict : dictionary of all track ids with countries as tag
+    query_string : query string template
+    start_date : start date
+    end_date : end date
+
+    Returns
+    -------
+    items : list of all possible URLs
+
+    """
+    items = []
+    for track_countries in tracks_dict.keys():
+        items += [query_string.format(race=race,
+                                      track=track,
+                                      date=date.strftime('%m-%d-%Y'))
+                  for date in daterange(start_date, end_date)
+                  for race in range(0,15)
+                  for track in tracks_dict[track_countries]
+                  ]
+    return items   
+
     
 def download(url):
     """
@@ -23,11 +72,11 @@ def download(url):
 
     Parameters
     ----------
-    url : PDF url stored in json file
+    url : PDF url 
 
     Returns
     -------
-    None.
+    None if valid or invalid, error message if blocked by robots
 
     """
     
@@ -149,9 +198,26 @@ def async_detect_document(gcs_source_uri, gcs_destination_uri):
 
 
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/Users/williamsheehan/Downloads/Equibase-4f0a3e50cac6.json"
+
+
+
+with open("trackids1.json", 'r') as file:
+    tracks = json.load(file)
+    
+
+start_date = datetime.date(1998,1,1)
+
+end_date = datetime.datetime.now().date()
+
+urls = generate(tracks,
+         "https://www.equibase.com/premium/eqbPDFChartPlus.cfm?RACE={race}&BorP=P&TID={track}&CTRY=USA&DT={date}&DAY=D&STYLE=EQB",
+         start_date,
+         end_date)
+
+
 error_arr = []        
-with open ('fullpdfurls.json', 'r') as f:
-    urls = json.load(f)    
+    
 
 for url in urls:
     a = download(url)

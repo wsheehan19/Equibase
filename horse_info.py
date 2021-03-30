@@ -10,7 +10,6 @@ import pandas as pd
 import numpy as np
 
 pdf = "/Users/williamsheehan/Documents/Equibase Charts/eqbPDFChartPlus.pdf"
-# pdf1 =  "/Users/williamsheehan/Documents/Equibase Charts/eqbPDFChartPlus (4).pdf"
 
 pdfs = ["/Users/williamsheehan/Documents/Equibase Charts/eqbPDFChartPlus.pdf",
         "/Users/williamsheehan/Documents/Equibase Charts/eqbPDFChartPlus (1).pdf",
@@ -34,7 +33,7 @@ def get_index(section, text):
     
     return result
 
-out_dict = {}
+horse_dict = {}
 
 
 def horse_info(path):
@@ -44,57 +43,71 @@ def horse_info(path):
     
     # sections of pdf
     intro_and_chart = tables[0].df
-    odds = tables[1].df
-    past_pf = tables[2].df
+    try:
+        past_pf = tables[2].df
+    except IndexError:
+        past_pf = tables[1].df
+    
+
+    intro_and_chart.to_csv('test.csv')
     racename_loc = get_loc(intro_and_chart, '-Race')
     racename = racename_loc
     
     topleft = get_index(past_pf, 'Pgm')
-    topright = get_index(past_pf, 'Fin')
+ 
+    
+    arrays = past_pf[topleft[0]:].values
+    
+    odds_ind = get_index(intro_and_chart, 'Odds')
+    odds_comments = intro_and_chart.loc[odds_ind[0]:, odds_ind[1]: ]
+    odds_comments.dropna()
+
+    filter = odds_comments != ' '
+    odds = odds_comments[filter]
+    
+    odds_list = []
+    for row in odds.iterrows():
+        string = str(row)
+        if '.' in string:
+            a = string.split('.')[0][-2:]
+            b = string.split('.')[1][:2]
+            c = a.strip()
+            value = c + '.' + b
+            odds_list.append(value)
+        else:
+            pass
+        
+    data=arrays[1:]
+    columns=arrays[0]
+    df = pd.DataFrame(np.vstack(arrays))
+    df = pd.DataFrame(data=data,
+                      columns=columns,
+                      )
+    df.rename(columns={'Pgm Horse Name': 'Pgm', '': 'Horse Name'}, inplace=True)
+    df['Odds'] = odds_list
+    
+    
+    horse_dict = df.to_dict('records')
     
     
     temp_dict = {}
+    for horse in horse_dict:
+        key = horse['Horse Name']
+        value = horse
+        temp_dict[key] = value
     
-    
-    arrays = past_pf[topleft[0]:].values
-    horses = []    
-    keys = arrays[0]
-    
-    temp_horse_dict = dict.fromkeys(keys)
-    
-    print(keys)
-    
-    for arr in arrays[1:]:
-        name = arr[1]
-        for n in range(2, len(arr)):
-            pgm = arr[0]
-            value = arr[n]
-            key = keys[n]
-            temp_horse_dict[keys[0]] = pgm
-            temp_horse_dict[key] = value
-            temp_dict[name] = temp_horse_dict
-    
-     
-    print(temp_dict)           
-    
-    # for array in arrays:
-    #     horsename = array[1]
-    #     horses.append(horsename)
-        
-    #     for n in range(len(array)):
-    #         value = array[n]
-    #         key = arrays[0][n]
-    #         if len(key) > 2:
-    #             temp_dict[key] = value
-    #             print(temp_dict)
-    #             temp_horse_dict.update({horsename: temp_dict})
-    #         else:
-    #             key = 'Inplace'
-    #             temp_dict[key] = value
-    #             print(temp_dict)
-    #             temp_horse_dict.update({horsename: temp_dict})
             
-        
-    #print(temp_horse_dict)
+    horse_dict[racename] = temp_dict
+    
+    return temp_dict
 
-horse_info(pdf)
+     
+
+
+#horse_info("/Users/williamsheehan/Documents/Equibase Charts/eqbPDFChartPlus (4).pdf")
+for pdf in pdfs:
+    print(pdf)
+    horse_info(pdf)
+    
+    
+print(horse_dict)
